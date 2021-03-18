@@ -53,8 +53,8 @@ MPCFollower::MPCFollower()
   path_filter_moving_ave_num_ = declare_parameter("path_filter_moving_ave_num", 35);
   curvature_smoothing_num_ = declare_parameter("curvature_smoothing_num", 35);
   traj_resample_dist_ = declare_parameter("traj_resample_dist", 0.1);  // [m]
-  admisible_position_error_ = declare_parameter("admisible_position_error", 5.0);
-  admisible_yaw_error_ = declare_parameter("admisible_yaw_error", M_PI_2);
+  admissible_position_error_ = declare_parameter("admissible_position_error", 5.0);
+  admissible_yaw_error_rad_ = declare_parameter("admissible_yaw_error_rad", M_PI_2);
   use_steer_prediction_ = declare_parameter("use_steer_prediction", false);
   mpc_param_.steer_tau = declare_parameter("vehicle_model_steer_tau", 0.1);
 
@@ -312,8 +312,9 @@ bool MPCFollower::calculateMPC(autoware_control_msgs::msg::ControlCommand * ctrl
       const double yaw = traj.yaw[i] + yaw_error;
       const double vx = traj.vx[i];
       const double k = traj.k[i];
+      const double smooth_k = traj.smooth_k[i];
       const double relative_time = traj.relative_time[i];
-      mpc_predicted_traj.push_back(x, y, z, yaw, vx, k, relative_time);
+      mpc_predicted_traj.push_back(x, y, z, yaw, vx, k, smooth_k, relative_time);
     }
 
     autoware_planning_msgs::msg::Trajectory predicted_traj;
@@ -409,18 +410,18 @@ bool MPCFollower::getData(const MPCTrajectory & traj, MPCData * data)
 
   /* check error limit */
   const double dist_err = MPCUtils::calcDist2d(current_pose_ptr_->pose, data->nearest_pose);
-  if (dist_err > admisible_position_error_) {
+  if (dist_err > admissible_position_error_) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(
       get_logger(), *get_clock(), duration, "position error is over limit. error = %fm, limit: %fm",
-      dist_err, admisible_position_error_);
+      dist_err, admissible_position_error_);
     return false;
   }
 
   /* check yaw error limit */
-  if (std::fabs(data->yaw_err) > admisible_yaw_error_) {
+  if (std::fabs(data->yaw_err) > admissible_yaw_error_rad_) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(
       get_logger(), *get_clock(), duration, "yaw error is over limit. error = %fdeg, limit %fdeg",
-      RAD2DEG * data->yaw_err, RAD2DEG * admisible_yaw_error_);
+      RAD2DEG * data->yaw_err, RAD2DEG * admissible_yaw_error_rad_);
     return false;
   }
 
@@ -606,7 +607,7 @@ MPCTrajectory MPCFollower::applyVelocityDynamicsFilter(const MPCTrajectory & inp
   output.vx.back() = v_end;  // set for end point
   output.push_back(
     output.x.back(), output.y.back(), output.z.back(), output.yaw.back(), v_end, output.k.back(),
-    t_end);
+    output.smooth_k.back(), t_end);
   return output;
 }
 
@@ -656,6 +657,7 @@ MPCFollower::MPCMatrix MPCFollower::generateMPCMatrix(const MPCTrajectory & refe
 
     // curvature will be 0 when vehicle stops
     const double ref_k = reference_trajectory.k[i] * sign_vx_;
+    const double ref_smooth_k = reference_trajectory.smooth_k[i] * sign_vx_;
 
     /* get discrete state matrix A, B, C, W */
     vehicle_model_ptr_->setVelocity(ref_vx);
@@ -701,6 +703,7 @@ MPCFollower::MPCMatrix MPCFollower::generateMPCMatrix(const MPCTrajectory & refe
     m.R1ex.block(idx_u_i, idx_u_i, DIM_U, DIM_U) = R_adaptive;
 
     /* get reference input (feed-forward) */
+    vehicle_model_ptr_->setCurvature(ref_smooth_k);
     vehicle_model_ptr_->calculateReferenceInput(Uref);
     if (std::fabs(Uref(0, 0)) < DEG2RAD * mpc_param_.zero_ff_steer_deg) {
       Uref(0, 0) = 0.0;  // ignore curvature noise
@@ -957,7 +960,9 @@ void MPCFollower::onTrajectory(const autoware_planning_msgs::msg::Trajectory::Sh
     const double t_end = t.relative_time.back() + getPredictionTime() + t_ext;
     const double v_end = 0.0;
     t.vx.back() = v_end;  // set for end point
-    t.push_back(t.x.back(), t.y.back(), t.z.back(), t.yaw.back(), v_end, t.k.back(), t_end);
+    t.push_back(
+      t.x.back(), t.y.back(), t.z.back(), t.yaw.back(), v_end, t.k.back(), t.smooth_k.back(),
+      t_end);
   }
 
   if (!mpc_traj_smoothed.size()) {
