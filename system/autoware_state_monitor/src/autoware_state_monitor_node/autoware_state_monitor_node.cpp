@@ -29,15 +29,13 @@ std::vector<Config> getConfigs(
   rclcpp::node_interfaces::NodeParametersInterface::SharedPtr interface,
   const std::string & config_namespace)
 {
-  std::string names_key = config_namespace + ".names";
-  interface->declare_parameter(names_key);
-  std::vector<std::string> config_names = interface->get_parameter(names_key).as_string_array();
+  const auto item_count = interface->declare_parameter(config_namespace + ".item_count").get<int64_t>();
 
   std::vector<Config> configs;
-  configs.reserve(config_names.size());
+  configs.reserve(item_count);
 
-  for (auto config_name : config_names) {
-    configs.emplace_back(interface, config_namespace + ".configs." + config_name, config_name);
+  for (int i = 0; i < item_count; ++i) {
+    configs.emplace_back(interface, config_namespace + ".configs.item" + std::to_string(i));
   }
 
   return configs;

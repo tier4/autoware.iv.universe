@@ -26,9 +26,9 @@ struct TopicConfig
 {
   explicit TopicConfig(
     rclcpp::node_interfaces::NodeParametersInterface::SharedPtr interface,
-    const std::string & namespace_prefix, const std::string & name)
+    const std::string & namespace_prefix)
   : module(interface->declare_parameter(namespace_prefix + ".module").get<std::string>()),
-    name(name),
+    name(interface->declare_parameter(namespace_prefix + ".name").get<std::string>()),
     type(interface->declare_parameter(namespace_prefix + ".type").get<std::string>()),
     transient_local(
       interface->declare_parameter(namespace_prefix + ".transient_local",
@@ -68,7 +68,7 @@ struct TfConfig
 {
   explicit TfConfig(
     rclcpp::node_interfaces::NodeParametersInterface::SharedPtr interface,
-    const std::string & namespace_prefix, const std::string & name)
+    const std::string & namespace_prefix)
   : module(interface->declare_parameter(namespace_prefix + ".module").get<std::string>()),
     from(interface->declare_parameter(namespace_prefix + ".from").get<std::string>()),
     to(interface->declare_parameter(namespace_prefix + ".to").get<std::string>()),
