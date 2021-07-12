@@ -20,6 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
   ndt_pcl_modified
   ndt_omp
+  ndt_ocl
   ndt
   autoware_localization_srvs
 )
@@ -40,7 +41,7 @@ add_dependencies(ndt_scan_matcher
   ${catkin_EXPORTED_TARGETS}
 )
 
-target_link_libraries(ndt_scan_matcher ${catkin_LIBRARIES})
+target_link_libraries(ndt_scan_matcher ${catkin_LIBRARIES} OpenCL)
 
 install(
   TARGETS
@@ -54,5 +55,6 @@ install(
   DIRECTORY
     launch
     config
+    ocl
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )

@@ -6,6 +6,7 @@ add_compile_options(-std=c++14)
 find_package(catkin REQUIRED COMPONENTS
   ndt_pcl_modified
   ndt_omp
+  ndt_ocl
 )
 find_package(PCL REQUIRED COMPONENTS common)
 
@@ -22,6 +23,7 @@ add_library(ndt
   src/pcl_generic.cpp
   src/pcl_modified.cpp
   src/omp.cpp
+  src/ocl.cpp
 )
 
 add_dependencies(ndt

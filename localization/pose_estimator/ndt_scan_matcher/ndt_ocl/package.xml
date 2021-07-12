@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package>
+  <name>ndt_ocl</name>
+  <version>0.1.0</version>
+  <description>OpenCL boosted NDT and GICP algorithms</description>
+
+  <maintainer email="harihitode@gmail.com">Daichi Murakami</maintainer>
+  <license>Apache 2</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>pcl_ros</build_depend>
+  <build_depend>roscpp</build_depend>
+  <run_depend>pcl_ros</run_depend>
+  <run_depend>roscpp</run_depend>
+
+  <export>
+  </export>
+</package>

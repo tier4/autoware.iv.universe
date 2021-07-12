@@ -1,4 +1,13 @@
 /*
+ * Copyright 2021 Tier IV, inc. All rights reserved.
+ *
+ * Changes from original source
+ * * Add OpenCL type to implementation method in NDTScanMatcher class.
+ *
+ * This class is also licensed under the Apache License, Version 2.0.
+ *
+ * === ORIGINAL LICENSE ===
+ *
  * Copyright 2015-2019 Autoware Foundation. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +21,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * ========================
  */
 
 #pragma once
@@ -45,6 +56,7 @@
 // #include <pcl/registration/ndt.h>
 // #include "pcl_registration/ndt.h"
 #include "ndt/omp.h"
+#include "ndt/ocl.h"
 #include "ndt/pcl_generic.h"
 #include "ndt/pcl_modified.h"
 
@@ -76,7 +88,7 @@ class NDTScanMatcher
     int iteration;
   };
 
-  enum class NDTImplementType { PCL_GENERIC = 0, PCL_MODIFIED = 1, OMP = 2 };
+  enum class NDTImplementType { PCL_GENERIC = 0, PCL_MODIFIED = 1, OMP = 2, OCL = 3 };
 
 public:
   NDTScanMatcher(ros::NodeHandle nh, ros::NodeHandle private_nh);

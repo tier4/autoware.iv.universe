@@ -1,4 +1,13 @@
 /*
+ * Copyright 2021 Tier IV, inc. All rights reserved.
+ *
+ * Changes from original source
+ * * Add and use OpenCL implementation.
+ *
+ * This class is also licensed under the Apache License, Version 2.0.
+ *
+ * === ORIGINAL LICENSE ===
+ *
  * Copyright 2015-2019 Autoware Foundation. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +21,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * =======================
  */
 
 #include "ndt_scan_matcher/ndt_scan_matcher_core.h"
@@ -69,6 +80,9 @@ NDTScanMatcher::NDTScanMatcher(ros::NodeHandle nh, ros::NodeHandle private_nh)
     ndt_omp_ptr->setNumThreads(omp_params_.num_threads);
 
     ndt_ptr_ = ndt_omp_ptr;
+  } else if (ndt_implement_type_ == NDTImplementType::OCL) {
+    ndt_ptr_.reset(new NormalDistributionsTransformOCL<PointSource, PointTarget>);
+    ROS_INFO("NDT Implement Type is OpenCL");
   } else {
     ndt_implement_type_ = NDTImplementType::PCL_GENERIC;
     ROS_INFO("NDT Implement Type is PCL GENERIC");
@@ -271,6 +285,8 @@ void NDTScanMatcher::callbackMapPoints(
     ndt_omp_ptr->setNumThreads(omp_params_.num_threads);
 
     new_ndt_ptr_ = ndt_omp_ptr;
+  } else if (ndt_implement_type_ == NDTImplementType::OCL) {
+    new_ndt_ptr_.reset(new NormalDistributionsTransformOCL<PointSource, PointTarget>);
   } else {
     new_ndt_ptr_.reset(new NormalDistributionsTransformPCLGeneric<PointSource, PointTarget>);
   }
