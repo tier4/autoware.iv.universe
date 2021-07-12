@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Tier IV inc. All rights reserved.
+ * Copyright 2021 Tier IV, inc. All rights reserved.
  *
  * The NormalDistributionsTransformOCL class is based on
  * NormalDistributionsTransformOMP with naming modification.
