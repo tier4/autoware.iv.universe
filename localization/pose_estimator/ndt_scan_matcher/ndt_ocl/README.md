@@ -10,7 +10,7 @@ Parallel algorithms in ndt scan matcher would be executed efficiently on various
 * Devices supporting OpenCL 2.x
 * ROS melodic
 
-## Requirements (ex. Intel OpenCL Environment)
+## Setting up OpenCL 2.1 (ex. Intel OpenCL Environment)
 
 ### Install and Setup OpenCL™ Runtimes for Intel Processors
 
@@ -53,37 +53,27 @@ Parallel algorithms in ndt scan matcher would be executed efficiently on various
 3. Install the SDK from the GUI installer.
 
 
-### Configurations for NDT OCL
+## Configurations for NDT OCL
 
-#### include/ndt_ocl/ndt_ocl.h
+### include/ndt_ocl/ndt_ocl.h
 
-* MAX_SOURCE_SIZE
+* MAX_SOURCE_SIZE: Maximum size of the source kernel code. Be careful to this value when you modify the `compute_derivatives.cl`.
 
-Maximum size of the source kernel code. Be careful to this value when you modify the `compute_derivatives.cl`.
+* **MAX_PCL_INPUT_NUM**: Maximum size of # of point cloud in LiDAR input for `computeDerivatives()`. Default is 1,500.
 
-* **MAX_PCL_INPUT_NUM**
+* **LIMIT_NUM**: Maximum size of # of voxels retured from neighbor search method, or `radiusSearch`.
 
-Maximum size of # of point cloud in LiDAR input for `computeDerivatives()`. Default is 1,500.
+### include/ndt_ocl/voxel_grid_covariance_ocl.h
 
-* **LIMIT_NUM**
+* **MAX_PCL_MAP_NUM**: Maximum size of # of point cloud in MAP.
 
-Maximum size of # of voxels retured from neighbor search method, or `radiusSearch`.
+* MAX_DEPTH: Maximum searching deapth of DFS for KD-tree in neighbor search method. When the given KD-tree is heigher than MAX_DEPTH, the DFS is force quitting at the MAX_DEPTH.
 
-#### include/ndt_ocl/voxel_grid_covariance_ocl.h
+## Launch Configurations
 
-* **MAX_PCL_MAP_NUM**
+Change the `ndt_implement_type` to "3" in `launch/autoware_launcher/localization_launch/config/ndt_scan_matcher.yaml` as below.
 
-Maximum size of # of point cloud in MAP.
-
-* MAX_DEPTH
-
-Maximum searching deapth of DFS for KD-tree in neighbor search method. When the given KD-tree is heigher than MAX_DEPTH, the DFS is force quitting at the MAX_DEPTH.
-
-### Launch Configuration
-
-Change the `ndt_implement_type` to 3 in `launch/autoware_launcher/localization_launch/config/ndt_scan_matcher.yaml` as below.
-
-You can still set "2" to use ndt_omp, OpenMP accelerated ndt.
+You can still set "2" to use ndt_omp, OpenMP accelerated ndt scan matcher.
 
 ```
 # NDT implementation type
